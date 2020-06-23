@@ -63,10 +63,10 @@ async function getContainerScanDetails() {
     if (!runs || runs.length == 1) return "";
 
     let details = "";
-    console.log(runs);
     let checkRuns = runs['check_runs'];
     checkRuns.forEach((run: any) => {
-        if (run && run.name && run.name.startsWith('[container-scan]')) {
+        if (run && run.name && run.name.indexOf('[container-scan]') >= 0) {
+            console.log(`Found container scan result: ${JSON.stringify(run)}`)
             details = `${details} \n ${run.output.text}`;
         }
     });
@@ -199,6 +199,7 @@ function createAssessment(azureSessionToken: string, subscriptionId: string, man
                 console.log("Successfully created Assessment")
                 resolve();
             } else {
+                console.log('Assessment creation failed')
                 reject(JSON.stringify(response.body));
             }
         }).catch(reject);
