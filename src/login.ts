@@ -4,7 +4,8 @@ import * as querystring from 'querystring';
 
 import { v4 as uuidv4 } from 'uuid';
 import { GitHubClient } from './gitClient';
-import * as fs from 'fs';
+
+let conclusion = "Healthy";
 
 interface Details {
     description: string;
@@ -69,8 +70,11 @@ async function getContainerScanDetails() {
     let checkRuns = runs['check_runs'];
     checkRuns.forEach((run: any) => {
         if (run && run.name && run.name.indexOf('[container-scan]') >= 0) {
-            console.log(`Found container scan result: ${JSON.stringify(run)}`)
+            console.log(`Found container scan result: ${JSON.stringify(run)}`);
             details = `${details} \n ${run.output.text.replace(/\*\*/g, "")}`;
+            if (run.conclusion === 'failure' && conclusion === 'Healthy') {
+                conclusion = 'Unhealthy';
+            }
         }
     });
 
@@ -87,15 +91,13 @@ async function getDetails() {
     const containerScanResult = await getContainerScanDetails();
 
     let description = "";
-    let remediationSteps = "";
     if (containerScanResult.trim()) {
-        remediationSteps = containerScanResult;
         description = `
         Results of running the Github container scanning action on the image deployed to this cluster. 
         You can find <a href="${workflow_url}">the workflow here</a>.
         This assessment was created from <a href="${run_url}">this workflow run</a>.`
         const details: Details = {
-            remediationSteps: `${containerScanResult} \n Manual remediation:
+            remediationSteps: `${containerScanResult} \n Steps to remediate:
             If possible, update base images to a version that addresses these vulnerabilities.
             If the vulnerabilities are known and acceptable, add them to the allowed list in the Github repo.`,
             description: description,
@@ -112,7 +114,7 @@ async function getDetails() {
         This assessment was created from <a href="${run_url}">this workflow run</a>.
 
         For mitigation take appropriate steps.`,
-        remediationSteps: "Manual remediation",
+        remediationSteps: "You can do it yourself",
         title: "Assessment from github"
     } as Details;
 }
@@ -190,7 +192,7 @@ function createAssessment(azureSessionToken: string, subscriptionId: string, man
                 },
                 "status": {
                     "cause": "Created Using a GitHub action",
-                    "code": code,
+                    "code": conclusion,
                     "description": details.description
                 }
             }
