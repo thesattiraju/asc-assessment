@@ -1,0 +1,32 @@
+name: 'Create assessment'
+description: ''
+inputs: 
+  creds:
+    description: 'Azure credentials i.e. output of `az ad sp create-for-rbac --sdk-auth`'
+    required: true
+    default: ''
+  resource-group:
+    description: 'Resource Group Name'
+    required: true
+    default: ''
+  cluster-name:
+    description: 'AKS Cluster Name'
+    required: true
+    default: ''
+  code:
+    description: 'assessment code'
+    required: true
+    default: ''
+  severity:
+    description: 'Severity of the assessment'
+    required: true
+    default: 'Low'
+  token:
+    description: 'token'
+    required: true
+    default: '${{ github.token }}'
+branding:
+  color: 'green' # optional, decorates the entry in the GitHub Marketplace
+runs:
+  using: 'node12'
+  main: 'lib/login.js'
