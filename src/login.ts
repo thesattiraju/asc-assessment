@@ -4,12 +4,14 @@ import * as querystring from 'querystring';
 
 import { v4 as uuidv4 } from 'uuid';
 import { GitHubClient } from './gitClient';
+import * as fs from 'fs';
 
 interface Details {
     description: string;
     remediationSteps: string;
     title: string;
 }
+
 
 function getAzureAccessToken(servicePrincipalId, servicePrincipalKey, tenantId, authorityUrl): Promise<string> {
 
@@ -55,7 +57,8 @@ function getAzureAccessToken(servicePrincipalId, servicePrincipalKey, tenantId, 
 }
 
 async function getContainerScanDetails() {
-    const commitId = process.env['GITHUB_SHA'];
+    const commit = core.getInput('commit-id');
+    const commitId = commit ? commit : process.env['GITHUB_SHA'];
     const token = core.getInput('token');
     const client = new GitHubClient(process.env['GITHUB_REPOSITORY'], token);
     const runs = await client.getCheckRuns(commitId);
