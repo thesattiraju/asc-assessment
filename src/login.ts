@@ -67,7 +67,7 @@ async function getContainerScanDetails() {
     checkRuns.forEach((run: any) => {
         if (run && run.name && run.name.indexOf('[container-scan]') >= 0) {
             console.log(`Found container scan result: ${JSON.stringify(run)}`)
-            details = `${details} \n ${run.output.text.replace("**", "")}`;
+            details = `${details} \n ${run.output.text.replaceAll("**", "")}`;
         }
     });
 
