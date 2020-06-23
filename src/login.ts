@@ -73,8 +73,7 @@ async function getContainerScanDetails() {
             console.log(`Found container scan result: ${JSON.stringify(run)}`);
             details = `
             ${details} 
-
-            The check-run can be found <a href="${run.url}"> here </a>
+            The check-run can be found <a href="${run.html_url}"> here </a>
             ${run.output.text.replace(/\*\*/g, "")}`;
             if (run.conclusion === 'failure' && conclusion === 'Healthy') {
                 conclusion = 'Unhealthy';
@@ -82,7 +81,7 @@ async function getContainerScanDetails() {
         }
     });
 
-    return `${details}`;
+    return `${details.trim()}`;
 }
 
 async function getDetails() {
