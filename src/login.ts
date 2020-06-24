@@ -40,7 +40,6 @@ function getAzureAccessToken(servicePrincipalId, servicePrincipalKey, tenantId, 
         sendRequest(webRequest, webRequestOptions).then(
             (response: WebResponse) => {
                 if (response.statusCode == 200) {
-                    console.log("Got access token")
                     resolve(response.body.access_token);
                 }
                 else if ([400, 401, 403].indexOf(response.statusCode) != -1) {
@@ -70,7 +69,7 @@ async function getContainerScanDetails() {
     let checkRuns = runs['check_runs'];
     checkRuns.forEach((run: any) => {
         if (run && run.name && run.name.indexOf('[container-scan]') >= 0) {
-            console.log(`Found container scan result: ${JSON.stringify(run)}`);
+            console.log(`Found container scan result: ${run.name}`);
             details = `
             ${details} 
             The check-run can be found <a href="${run.html_url}"> here </a>
@@ -130,7 +129,7 @@ function getAssessmentName(details: Details) {
     const title = core.getInput('assessment-title')
     if (title && title.trim())
         details.title = title;
-        
+
     if (details.title) {
         return `${details.title} - ${workflow} - ${run_id}`
     }
@@ -165,10 +164,10 @@ function createAssessmentMetadata(azureSessionToken: string, subscriptionId: str
         });
 
         sendRequest(webRequest).then((response: WebResponse) => {
-            console.log("Response", JSON.stringify(response));
+            // console.log("Response", JSON.stringify(response));
             let accessProfile = response.body;
             if (accessProfile && accessProfile.name) {
-                console.log("Successfully created assessment metadata", JSON.stringify(response.body));
+                // console.log("Successfully created assessment metadata", JSON.stringify(response.body));
                 resolve(accessProfile.name);
             } else {
                 reject(JSON.stringify(response.body));
@@ -180,7 +179,6 @@ function createAssessmentMetadata(azureSessionToken: string, subscriptionId: str
 function createAssessment(azureSessionToken: string, subscriptionId: string, managementEndpointUrl: string, metadata_guid: string, details: Details): Promise<string> {
     let resourceGroupName = core.getInput('resource-group', { required: true });
     let clusterName = core.getInput('cluster-name', { required: true });
-    let code = core.getInput('code', { required: true });
 
     return new Promise<string>((resolve, reject) => {
 
@@ -207,7 +205,7 @@ function createAssessment(azureSessionToken: string, subscriptionId: string, man
         });
 
         sendRequest(webRequest).then((response: WebResponse) => {
-            console.log("Response", JSON.stringify(response));
+            // console.log("Response", JSON.stringify(response));
             if (response.statusCode == 200) {
                 console.log("Successfully created Assessment")
                 resolve();
