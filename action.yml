@@ -29,6 +29,10 @@ inputs:
     description: 'commit-id-for-container-scan'
     required: false
     default: '${{ github.event.client_payload.commit }}'
+  assessment-title:
+    description: 'assessment title'
+    required: false
+    default: ''
 branding:
   color: 'green' # optional, decorates the entry in the GitHub Marketplace
 runs:

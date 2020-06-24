@@ -127,6 +127,10 @@ async function getDetails() {
 function getAssessmentName(details: Details) {
     const run_id = process.env['GITHUB_RUN_ID'];
     const workflow = process.env['GITHUB_WORKFLOW'];
+    const title = core.getInput('assessment-title')
+    if (title && title.trim())
+        details.title = title;
+        
     if (details.title) {
         return `${details.title} - ${workflow} - ${run_id}`
     }
