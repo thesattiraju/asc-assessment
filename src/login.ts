@@ -4,6 +4,7 @@ import * as querystring from 'querystring';
 
 import { v4 as uuidv4 } from 'uuid';
 import { GitHubClient } from './gitClient';
+import * as fs from 'fs';
 
 let conclusion = "Healthy";
 
@@ -83,6 +84,41 @@ async function getContainerScanDetails() {
     return `${details.trim()}`;
 }
 
+function getContents(content: any) {
+    let summary = "";
+    if (content && content["runs"]) {
+        let runs: any [] = content["runs"];
+        runs.forEach((run) => {
+            if (run["results"] && run["results"].length > 0) {
+                let results: any[] = run["results"];
+                results.forEach((result) => {
+                    if (result && result["message"] && results["message"]["text"])
+                    summary = `${summary} \n ----------------- \n ${result["message"]["text"]}`
+                });
+            }
+        });
+    }
+    return summary;
+}
+
+function summariseSarif(sarifFile: string): string {
+
+    if (fs.existsSync(sarifFile)) {
+        const contents = fs.readFileSync(sarifFile).toString();
+        try {
+            let sarif = JSON.parse(contents);
+            return getContents(sarif);
+        } catch (ex) {
+            console.log(ex);
+            return '';
+        }
+    }
+    else {
+        console.log('File not found:', sarifFile)
+        return "";
+    }
+}
+
 async function getDetails() {
     const run_id = process.env['GITHUB_RUN_ID'];
     const workflow = process.env['GITHUB_WORKFLOW'];
@@ -93,6 +129,20 @@ async function getDetails() {
     const containerScanResult = await getContainerScanDetails();
 
     let description = "";
+
+    let sarifFile = core.getInput('upload-sarif');
+    if (sarifFile) {
+        const details: Details = {
+            remediationSteps: `${summariseSarif(sarifFile)} \n `,
+            description: `Results of running the Github container scanning action on the image deployed to this cluster. 
+            You can find <a href="${workflow_url}">the workflow here</a>.
+            This assessment was created from <a href="${run_url}">this workflow run</a>.`,
+            title: "Github container scanning for deployed container images"
+        };
+        return details;
+        return;
+    }
+
     if (containerScanResult.trim()) {
         description = `
         Results of running the Github container scanning action on the image deployed to this cluster. 

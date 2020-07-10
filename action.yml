@@ -33,6 +33,10 @@ inputs:
     description: 'assessment title'
     required: false
     default: ''
+  upload-sarif:
+    description: 'file path of a sarif you want to upload'
+    required: false
+    default: ''
 branding:
   color: 'green' # optional, decorates the entry in the GitHub Marketplace
 runs:
