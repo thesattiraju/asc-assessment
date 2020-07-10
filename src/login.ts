@@ -234,13 +234,27 @@ function createAssessmentMetadata(azureSessionToken: string, subscriptionId: str
 
 function createAssessment(azureSessionToken: string, subscriptionId: string, managementEndpointUrl: string, metadata_guid: string, details: Details): Promise<string> {
     let resourceGroupName = core.getInput('resource-group', { required: true });
-    let clusterName = core.getInput('cluster-name', { required: true });
+    let clusterName = core.getInput('cluster-name', { required: false });
+    let webAppName = core.getInput('web-app-name', { required: false });
+    
+    let scope = "";
+    if (!clusterName && !webAppName) {
+        throw new Error("Supply clusterName or webAppName");
+    }
+
+    if (clusterName) {
+        scope = `subscriptions/${subscriptionId}/resourceGroups/${resourceGroupName}/providers/Microsoft.ContainerService/managedClusters/${clusterName}`;
+    }
+    if (webAppName) {
+        scope = `subscriptions/${subscriptionId}/resourceGroups/${resourceGroupName}//providers/Microsoft.Web/sites/${webAppName}`
+    }
+
 
     return new Promise<string>((resolve, reject) => {
 
         var webRequest = new WebRequest();
         webRequest.method = 'PUT';
-        webRequest.uri = `${managementEndpointUrl}/subscriptions/${subscriptionId}/resourceGroups/${resourceGroupName}/providers/Microsoft.ContainerService/managedClusters/${clusterName}/providers/Microsoft.Security/assessments/${metadata_guid}?api-version=2020-01-01`;
+        webRequest.uri = `${managementEndpointUrl}/${scope}/providers/Microsoft.Security/assessments/${metadata_guid}?api-version=2020-01-01`;
         webRequest.headers = {
             'Authorization': 'Bearer ' + azureSessionToken,
             'Content-Type': 'application/json; charset=utf-8'
@@ -249,7 +263,7 @@ function createAssessment(azureSessionToken: string, subscriptionId: string, man
         webRequest.body = JSON.stringify({
             "properties": {
                 "resourceDetails": {
-                    "id": `${managementEndpointUrl}/subscriptions/${subscriptionId}/resourceGroups/${resourceGroupName}/providers/Microsoft.ContainerService/managedClusters/${clusterName}`,
+                    "id": `${managementEndpointUrl}/${scope}`,
                     "source": "Azure"
                 },
                 "status": {
