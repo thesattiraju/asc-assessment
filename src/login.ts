@@ -92,8 +92,15 @@ function getContents(content: any) {
             if (run["results"] && run["results"].length > 0) {
                 let results: any[] = run["results"];
                 results.forEach((result) => {
-                    if (result && result["message"] && results["message"]["text"])
-                    summary = `${summary} \n ----------------- \n ${result["message"]["text"]}`
+                    if (result && result["message"] && result["message"]["text"]) {
+                        if (summary) {
+                            summary = `${summary} \n ----------------- \n ${result["message"]["text"]}`
+                        }
+                        else {
+                            summary = result["message"]["text"];
+                        }
+                    }
+
                 });
             }
         });
@@ -140,7 +147,6 @@ async function getDetails() {
             title: "Github container scanning for deployed container images"
         };
         return details;
-        return;
     }
 
     if (containerScanResult.trim()) {
